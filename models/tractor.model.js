@@ -1,5 +1,4 @@
 'use strict';
-// Luu secretKey dung de sign jwt cho 1 user
 
 const { Schema, model } = require('mongoose'); // Erase if already required
 

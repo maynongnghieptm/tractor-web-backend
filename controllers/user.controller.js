@@ -1,0 +1,89 @@
+const UserService = require("../services/user.service");
+
+class UserController {
+    static async getAllUsers(req, res, next) {
+        try {
+            const users = await UserService.getAllUsers(req.query);
+            return res.status(200).json({
+                code: 200,
+                message: 'Get all users successfully',
+                data: users,
+            });
+        } catch (err) {
+            return res.json({
+                code: err.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+            });
+        }
+    }
+
+    static async getUnconfirmedUsers(req, res, next) {
+        try {
+            const unconfirmedUsers = await UserService.getUnconfirmedUser(req.query);
+            return res.status(200).json({
+                code: 200,
+                message: 'Get all users successfully',
+                data: unconfirmedUsers,
+            });
+        } catch (err) {
+            return res.json({
+                code: err.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+            });
+        }
+    }
+
+    static async getUser(req, res, next) {
+        try {
+            const user = await UserService.getUser({
+                user_id: req.params.user_id,
+            });
+            return res.status(200).json({
+                code: 200,
+                message: 'Get user successfully',
+                data: user,
+            });
+        } catch (err) {
+            return res.json({
+                code: err.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+            });
+        }
+    }
+
+    static async createUser(req, res, next) {
+        try {
+            const newUser = await UserService.createUser(req.body);
+            return res.status(201).json({
+                code: 201,
+                message: 'Create new user successfully',
+                data: newUser
+            });
+        } catch (err) {
+            return res.json({
+                code: err.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+            });
+        }
+    }
+
+    static async confirmUser(req, res, next) {
+        try {
+            const confirmedUser = await UserService.confirmUser({
+                user_id: req.params.user_id,
+            });
+            return res.status(201).json({
+                code: 201,
+                message: 'Confirm user successfully',
+                data: confirmedUser
+            });
+        } catch (err) {
+            return res.json({
+                code: err.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+            });
+        }
+    }
+}
+
+module.exports = UserController;
