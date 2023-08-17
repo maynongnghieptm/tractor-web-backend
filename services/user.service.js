@@ -5,7 +5,7 @@ const { getInfoData } = require("../utils");
 
 class UserService {
     static async getAllUsers({ limit = 25, sortBy = 'createdAt', sortOrder = SORT_ORDER.DESC, page = 1, filter = { role: USER_ROLE.USER } }) {
-        return await getAllUsers({ limit, sortBy, sortOrder, page, filter, select: ['username', 'email', 'fullname', 'address'] });
+        return await getAllUsers({ limit, sortBy, sortOrder, page, filter, select: ['username', 'email', 'fullname', 'address', 'isConfirmed'] });
     }
 
     static async getUser({ user_id, unSelect = ['password'] }) {
@@ -13,7 +13,7 @@ class UserService {
     }
 
     static async getUnconfirmedUser({ limit = 25, sortBy = 'createdAt', sortOrder = SORT_ORDER.DESC, page = 1, filter = { role: USER_ROLE.USER, isConfirmed: false, isDeleted: false }}) {
-        return await getAllUsers({ limit, sortBy, sortOrder, page, filter, select: ['username', 'email', 'fullname', 'address'] });
+        return await getAllUsers({ limit, sortBy, sortOrder, page, filter, select: ['username', 'email', 'fullname', 'address', 'isConfirmed'] });
     }
 
     static async createUser(payload) {
@@ -35,6 +35,31 @@ class UserService {
         existedUser.isConfirmed = true;
         await existedUser.save();
         return getInfoData({ fields: ['_id', 'username', 'email', 'fullname', 'address', 'isConfirmed'], object: existedUser })
+    }
+
+    static async deleteUser({ user_id }) {
+        const existedUser = await UserModel.findOne({ _id: user_id, isDeleted: false });
+        if(!existedUser) {
+            throw new Error('Error: User is not exist');
+        }
+
+        existedUser.isDeleted = true;
+        await existedUser.save();
+        return existedUser;
+    }
+
+    static async updateUser({ user_id, payload }) {
+        const existedUser = await UserModel.findOne({ _id: user_id, isDeleted: false });
+        if(!existedUser) {
+            throw new Error('Error: User is not exist');
+        }
+
+        Object.keys(payload).map((key) => {
+            existedUser[key] = payload[key];
+        })
+
+        await existedUser.save();
+        return existedUser;
     }
 }
 
