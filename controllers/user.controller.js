@@ -84,6 +84,41 @@ class UserController {
             });
         }
     }
+
+    static async deleteUser(req, res, next) {
+        try {
+            const deletedUser = await UserService.deleteUser({ user_id: req.params.user_id });
+            return res.status(201).json({
+                code: 201,
+                message: 'Delete user successfully',
+                data: deletedUser
+            });
+        } catch (err) {
+            return res.json({
+                code: err.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+            });
+        }
+    }
+
+    static async updateUser(req, res, next) {
+        try {
+            const updatedUser = await UserService.updateUser({
+                user_id: req.params.user_id,
+                payload: req.body,
+            });
+            return res.status(201).json({
+                code: 201,
+                message: 'Update user successfully',
+                data: updatedUser
+            });
+        } catch (err) {
+            return res.json({
+                code: err.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+            });
+        }
+    }
 }
 
 module.exports = UserController;

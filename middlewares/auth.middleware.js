@@ -2,17 +2,15 @@ const { HEADER, SECRET_KEY, USER_ROLE } = require("../constants");
 const { verifyToken } = require("../utils/auth");
 
 const isAuthenticated = async (req, res, next) => {
-    const userId = req.headers[HEADER.USER_ID];
-    if(!userId) {
-        throw new Error('Invalid request');
-    }
-
-    const accessToken = req.headers[HEADER.AUTHORIZATION];
-    if(!accessToken) {
-        throw new Error('Invalid request');
-    }
-
     try {
+        const userId = req.headers[HEADER.USER_ID];
+        if(!userId) {
+            throw new Error('Invalid request');
+        }
+        const accessToken = req.headers[HEADER.AUTHORIZATION];
+        if(!accessToken) {
+            throw new Error('Invalid request');
+        }
         const decodedUser = verifyToken(accessToken, SECRET_KEY);
         if(decodedUser.userId !== userId) {
             throw new Error('Invalid user')

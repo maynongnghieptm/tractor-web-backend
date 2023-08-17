@@ -12,7 +12,8 @@ const createToken = (payload, secretKey) => {
 }
 
 const verifyToken = (token, secretKey) => {
-    const decoded = JWT.verify(token, secretKey);
+    console.log(token);
+    const decoded = JWT.verify(token.split(' ')[1], secretKey);
     return decoded;
 }
 

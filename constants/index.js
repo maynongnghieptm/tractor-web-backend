@@ -13,7 +13,7 @@ const MONGO_URI = process.env.MONGO_URI;
 
 const HEADER = {
     USER_ID: 'x-user-id',
-    AUTHORIZATION: 'Authorization'
+    AUTHORIZATION: 'authorization'
 }
 
 module.exports = {
