@@ -6,7 +6,7 @@ const app = express();
 const mongoose = require('mongoose');
 const route = require('./routes');
 const { setupWebSocketServer } = require('./configs/websocket.config');
-const { MONGO_URI } = require('./constants');
+const { MONGO_URI, MONGO_DATABASE } = require('./constants');
 app.use(express.json());
 app.use(express.static('public'))
 app.use(cors());
@@ -43,14 +43,15 @@ setupWebSocketServer(server);
 
 mongoose.set('debug', true);
 mongoose.set('debug', { color: true });
-mongoose.connect(MONGO_URI, { 
-        maxPoolSize: 50 
-    })
-    .then(result => {
-        console.log('Connect to mongodb successfully!');
+mongoose.connect(`${MONGO_URI}/${MONGO_DATABASE}`, { 
+    maxPoolSize: 50 
+})
+.then(result => {
+    console.log('Connect to mongodb successfully!');
         server.listen(PORT, () => {
             console.log(`Server is running on PORT ${PORT}`);
         });
     }).catch(err => {
+        console.log(`${MONGO_URI}/${MONGO_DATABASE}`);
         console.log('Fail to connect to database');
     });

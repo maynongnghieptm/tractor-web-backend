@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  mongodb:
+    image: mongo
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_DATABASE=tractor
+    ports:
+      - 27018:27017
+    volumes:
+      - db:/data/db
+    # command: ["--noauth"]
+  app:
+    depends_on:
+      - mongodb
+    image: maynongnghieptm/tractor-web-backend
+    env_file: ./.env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - 8001:8000
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017
+      - MONGO_DATABASE=tractor
+    stdin_open: true
+    tty: true
+
+volumes:
+  db:
