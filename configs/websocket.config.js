@@ -15,6 +15,11 @@ function setupWebSocketServer(server) {
 
         socket.on('location', (locationData) => {
             console.log('Received location update: ', locationData);
+        });
+
+        socket.on('logs', (logData) => {
+            console.log('log data: ', logData);
+            ioInstance.emit('clientLogs', logData);
         })
 
         socket.on('disconnect', () => {

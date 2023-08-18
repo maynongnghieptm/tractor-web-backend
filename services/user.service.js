@@ -4,7 +4,7 @@ const UserModel = require("../models/user.model");
 const { getInfoData } = require("../utils");
 
 class UserService {
-    static async getAllUsers({ limit = 25, sortBy = 'createdAt', sortOrder = SORT_ORDER.DESC, page = 1, filter = { role: USER_ROLE.USER } }) {
+    static async getAllUsers({ limit = 25, sortBy = 'createdAt', sortOrder = SORT_ORDER.DESC, page = 1, filter = { role: USER_ROLE.USER, isDeleted: false } }) {
         return await getAllUsers({ limit, sortBy, sortOrder, page, filter, select: ['username', 'email', 'fullname', 'address', 'isConfirmed'] });
     }
 
@@ -14,6 +14,10 @@ class UserService {
 
     static async getUnconfirmedUser({ limit = 25, sortBy = 'createdAt', sortOrder = SORT_ORDER.DESC, page = 1, filter = { role: USER_ROLE.USER, isConfirmed: false, isDeleted: false }}) {
         return await getAllUsers({ limit, sortBy, sortOrder, page, filter, select: ['username', 'email', 'fullname', 'address', 'isConfirmed'] });
+    }
+
+    static async getDeletedUsers({ limit = 25, sortBy = 'createdAt', sortOrder = SORT_ORDER.DESC, page = 1, filter = { role: USER_ROLE.USER, isDeleted: true } }) {
+        return await getAllUsers({ limit, sortBy, sortOrder, page, filter, select: ['username', 'email', 'fullname', 'address', 'isConfirmed', 'isDeleted']});
     }
 
     static async createUser(payload) {
@@ -33,6 +37,28 @@ class UserService {
         }
 
         existedUser.isConfirmed = true;
+        await existedUser.save();
+        return getInfoData({ fields: ['_id', 'username', 'email', 'fullname', 'address', 'isConfirmed'], object: existedUser });
+    }
+
+    static async restoreUser({ user_id }) {
+        const existedUser = await UserModel.findOne({ _id: user_id, isDeleted: true });
+        if(!existedUser) {
+            throw new Error('Error: User is not exist');
+        }
+
+        existedUser.isDeleted = false;
+        await existedUser.save();
+        return getInfoData({ fields: ['_id', 'username', 'email', 'fullname', 'address', 'isConfirmed'], object: existedUser });
+    }
+
+    static async unconfirmUser({ user_id }) {
+        const existedUser = await UserModel.findOne({ _id: user_id, isConfirmed: true, isDeleted: false });
+        if(!existedUser) {
+            throw new Error('Error: User is not exist');
+        }
+
+        existedUser.isConfirmed = false;
         await existedUser.save();
         return getInfoData({ fields: ['_id', 'username', 'email', 'fullname', 'address', 'isConfirmed'], object: existedUser })
     }
