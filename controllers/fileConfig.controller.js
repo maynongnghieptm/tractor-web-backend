@@ -21,6 +21,41 @@ class FileConfigController {
             });
         }
     }
+
+    static async getAllFileConfigs(req, res, next) {
+        try {
+            const fileConfigs = await FileConfigService.getAllFileConfigs(req.query)
+            return res.status(201).json({
+                code: 200,
+                message: 'Create file config successfully',
+                data: fileConfigs
+            })
+        } catch (err) {
+            return res.json({
+                code: err.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+            });
+        }
+    }
+
+    static async deleteFileConfig(req, res, next) {
+        try {
+            const fileConfigs = await FileConfigService.deleteFileConfig({
+                file_id: req.params.file_id,
+            })
+
+            return res.status(200).json({
+                code: 200,
+                message: 'Delete file config successfully',
+                data: fileConfigs
+            })
+        } catch (err) {
+            return res.json({
+                code: err.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+            });
+        }
+    }
 }
 
 module.exports = FileConfigController;

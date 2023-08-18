@@ -33,6 +33,22 @@ class UserController {
         }
     }
 
+    static async getDeletedUsers(req, res, next) {
+        try {
+            const deletedUsers = await UserService.getDeletedUsers(req.query);
+            return res.status(200).json({
+                code: 200,
+                message: 'Get all users successfully',
+                data: deletedUsers,
+            });
+        } catch (err) {
+            return res.json({
+                code: err.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+            });
+        }
+    }
+
     static async getUser(req, res, next) {
         try {
             const user = await UserService.getUser({
@@ -76,6 +92,42 @@ class UserController {
                 code: 201,
                 message: 'Confirm user successfully',
                 data: confirmedUser
+            });
+        } catch (err) {
+            return res.json({
+                code: err.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+            });
+        }
+    }
+
+    static async restoreUser(req, res, next) {
+        try {
+            const restoredUser = await UserService.restoreUser({
+                user_id: req.params.user_id,
+            });
+            return res.status(201).json({
+                code: 201,
+                message: 'Restore user successfully',
+                data: restoredUser
+            });
+        } catch (err) {
+            return res.json({
+                code: err.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+            });
+        }
+    }
+
+    static async unconfirmedUser(req, res, next) {
+        try {
+            const unconfirmedUser = await UserService.unconfirmUser({
+                user_id: req.params.user_id,
+            });
+            return res.status(201).json({
+                code: 201,
+                message: 'Unconfirm user successfully',
+                data: unconfirmedUser
             });
         } catch (err) {
             return res.json({
