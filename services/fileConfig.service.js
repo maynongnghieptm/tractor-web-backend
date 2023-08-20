@@ -12,9 +12,12 @@ class FileConfigService {
             return new mongoose.Types.ObjectId(tractorId);
         })
         const io = getIOInstance();
-        io.emit('fileCreated', {
-            fileConfig: payload.fileConfig
-        })
+
+        for(const tractorId of tractorIds) {
+            io.emit(tractorId.toString(), {
+                fileConfig: payload.fileConfig
+            });
+        }
         return await FileConfigModel.create({
             ...payload,
             tractorIds: tractorIds
