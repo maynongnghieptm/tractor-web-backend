@@ -1,9 +1,27 @@
 const socketIO = require('socket.io');
 const { verifyToken } = require('../utils/auth');
 const { SECRET_KEY } = require('../constants');
-const TractorModel = require('../models/tractor.model')
+const TractorModel = require('../models/tractor.model');
+const LogsModel = require('../models/logs.model');
 
 let ioInstance;
+
+const connectedTractors = [];
+
+function addTractor(tractorId) {
+    connectedTractors.push(tractorId);
+}
+
+function removeTractor(tractorId) {
+    const indexToRemove = connectedTractors.indexOf(tractorId);
+    if(indexToRemove !== -1) {
+        connectedTractors.splice(indexToRemove, 1);
+    }
+}
+
+function getAllConnectedTractors() {
+    return connectedTractors;
+}
 
 function setupWebSocketServer(server) {
     ioInstance = socketIO(server, {
@@ -25,6 +43,7 @@ function setupWebSocketServer(server) {
                 next(new Error('Authentication for tractor error'));
             }
             socket.tractorId = socket.handshake.headers.tractorid;
+            addTractor(socket.tractorId);
             next();
         } else {
             next(new Error('Authentication Error'))
@@ -35,14 +54,18 @@ function setupWebSocketServer(server) {
         socket.on('location', (locationData) => {
             console.log('Received location update: ', locationData);
         });
-
-        socket.on('logs', (logData) => {
-            console.log('log data: ', logData);
+        console.log(`${socket.tractorId}-logs`)
+        socket.on(`${socket.tractorId}-logs`, async (logData) => {
             ioInstance.emit('clientLogs', logData);
+            await LogsModel.create({
+                tractorId: socket.tractorId,
+                log: logData,
+            });
         })
 
         socket.on('disconnect', () => {
             console.log('Websocket connection closed');
+            removeTractor(socket.tractorId);
         });
     })
 }
@@ -52,5 +75,5 @@ function getIOInstance() {
 }
 
 module.exports = {
-    setupWebSocketServer, getIOInstance
+    setupWebSocketServer, getIOInstance, addTractor, getAllConnectedTractors, removeTractor,
 }
