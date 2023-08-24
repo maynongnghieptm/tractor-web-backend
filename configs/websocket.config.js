@@ -56,10 +56,13 @@ function setupWebSocketServer(server) {
         });
         console.log(`${socket.tractorId}-logs`)
         socket.on(`${socket.tractorId}-logs`, async (logData) => {
-            ioInstance.emit('clientLogs', logData);
+            const jsonLogData = JSON.parse(logData);
+            ioInstance.emit('clientLogs', jsonLogData);
+
             await LogsModel.create({
                 tractorId: socket.tractorId,
-                log: logData,
+                log: jsonLogData.logs,
+                missionId: jsonLogData.missionId,
             });
         })
 

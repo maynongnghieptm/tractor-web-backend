@@ -12,6 +12,10 @@ var LogSchema = new Schema(
         log: {
             type: String,
             required: true,
+        },
+        missionId: {
+            type: String,
+            required: true,
         }
     },
     {
