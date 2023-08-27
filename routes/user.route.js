@@ -8,6 +8,7 @@ const router = express.Router();
 router.post('/', UserController.createUser);
 router.use(isAuthenticated);
 
+router.patch('/assign-tractors-to-user', isAdmin, UserController.asignTractorsToUser);
 router.patch('/unconfirm/:user_id', isAdmin, UserController.unconfirmedUser);
 router.patch('/confirm/:user_id', isAdmin, UserController.confirmUser);
 router.get('/unconfirmed/list', isAdmin, UserController.getUnconfirmedUsers);

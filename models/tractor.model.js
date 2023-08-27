@@ -9,6 +9,10 @@ var TractorSchema = new Schema(
             type: String,
             required: true,
         },
+        userList: [{
+            type: Schema.Types.ObjectId,
+            ref: 'User'
+        }]
     },
     {
         collection: 'Tractors',
