@@ -171,6 +171,25 @@ class UserController {
             });
         }
     }
+
+    static async asignTractorsToUser(req, res, next) {
+        try {
+            const updatedUser = await UserService.asignTractorsToUser({
+                userId: req.body.userId,
+                tractorList: req.body.tractorList,
+            });
+            return res.status(201).json({
+                code: 201,
+                message: 'Assign tractors to user successfully',
+                data: updatedUser
+            });
+        } catch (err) {
+            return res.json({
+                code: err.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+            });
+        }
+    }
 }
 
 module.exports = UserController;

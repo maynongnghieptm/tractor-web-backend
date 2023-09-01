@@ -38,6 +38,10 @@ var UserSchema = new Schema(
             enum: [USER_ROLE.ADMIN, USER_ROLE.USER],
             default: USER_ROLE.USER,
         },
+        tractorList: [{
+            type: Schema.Types.ObjectId,
+            ref: 'Tractor'
+        }],
         secretKey: {
             type: String,
         }

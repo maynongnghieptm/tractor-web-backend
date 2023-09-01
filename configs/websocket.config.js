@@ -3,6 +3,7 @@ const { verifyToken } = require('../utils/auth');
 const { SECRET_KEY } = require('../constants');
 const TractorModel = require('../models/tractor.model');
 const LogsModel = require('../models/logs.model');
+const UserModel = require('../models/user.model');
 
 let ioInstance;
 
@@ -39,6 +40,7 @@ function setupWebSocketServer(server) {
         } else if(socket.handshake.headers.tractorid) {
             // Check if tractor id exist in database
             const isTractorExisted = await TractorModel.findById(socket.handshake.headers.tractorid);
+            console.log(isTractorExisted);
             if(!isTractorExisted) {
                 next(new Error('Authentication for tractor error'));
             }
@@ -56,10 +58,21 @@ function setupWebSocketServer(server) {
         });
         console.log(`${socket.tractorId}-logs`)
         socket.on(`${socket.tractorId}-logs`, async (logData) => {
-            ioInstance.emit('clientLogs', logData);
+            const jsonLogData = JSON.parse(logData);
+            console.log(jsonLogData);
+            const tractor = await TractorModel.findOne({ _id: socket.tractorId });
+            console.log('TRACTOR: ', tractor);
+            if(tractor?.userList) {
+                tractor.userList.map((userId) => {
+                    console.log(`${socket.tractorId}-${userId}`);
+                    ioInstance.emit(`${socket.tractorId}-${userId}`, jsonLogData);
+                })
+            }
+
             await LogsModel.create({
                 tractorId: socket.tractorId,
-                log: logData,
+                log: jsonLogData.logs,
+                missionId: jsonLogData.missionId,
             });
         })
 

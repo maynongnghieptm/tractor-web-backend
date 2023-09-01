@@ -2,6 +2,7 @@ const { SORT_ORDER, USER_ROLE } = require("../constants");
 const { getAllUsers, getUser } = require("../models/repository/user.repository");
 const UserModel = require("../models/user.model");
 const { getInfoData } = require("../utils");
+const TractorService = require("./tractor.service");
 
 class UserService {
     static async getAllUsers({ limit = 25, sortBy = 'createdAt', sortOrder = SORT_ORDER.DESC, page = 1, filter = { role: USER_ROLE.USER, isDeleted: false } }) {
@@ -85,6 +86,22 @@ class UserService {
         })
 
         await existedUser.save();
+        return existedUser;
+    }
+
+    static async asignTractorsToUser({ userId, tractorList }) {
+        const existedUser = await UserModel.findOne({ _id: userId, isDeleted: false, role: USER_ROLE.USER });
+        if(!existedUser) {
+            throw new Error('Error: User is not exist');
+        }
+
+        existedUser.tractorList = tractorList;
+        await existedUser.save();
+        
+        for(const tractorId of tractorList) {
+            await TractorService.assignUserToTractor({ userId, tractorId });
+        }
+
         return existedUser;
     }
 }
