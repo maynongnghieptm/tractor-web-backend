@@ -6,9 +6,12 @@ const { isAuthenticated, isAdmin } = require('../middlewares/auth.middleware');
 const router = express.Router();
 
 // Sign up router
-router.get('/', TractorController.getAllTractors);
 
 router.use(isAuthenticated);
+router.get('/', isAdmin, TractorController.getAllTractors);
+router.get('/:tractorId', isAdmin, TractorController.getTractor);
 router.post('/', isAdmin, TractorController.createTractor);
+router.put('/:tractorId', isAdmin, TractorController.updateTractor);
+router.delete('/:tractorId', isAdmin, TractorController.deleteTractor);
 
 module.exports = router;

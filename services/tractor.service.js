@@ -5,9 +5,33 @@ class TractorService {
     static async getAllTractors() {
         return await TractorModel.find();
     }
+    static async getTractor({ tractorId }) {
+        return await TractorModel.findById(tractorId);
+    }
+
     static async createTractor(payload) {
         return await TractorModel.create(payload);
     }
+
+    static async updateTractor({ tractorId, payload }) {
+        const existedTractor = await TractorModel.findOne({ _id: tractorId });
+        if(!existedTractor) {
+            throw new Error('Error: Tractor is not exist')
+        }
+
+        Object.keys(payload).map((key) => {
+            existedTractor[key] = payload[key];
+        })
+
+        await existedTractor.save();
+        return existedTractor;
+    }
+
+    static async deleteTractor({ tractorId }) {
+        const deletedTractor = await TractorModel.findByIdAndDelete(tractorId);
+        return deletedTractor;
+    }
+
     static async assignUserToTractor({ userId, tractorId }) {
         const tractor = await TractorModel.findById(tractorId);
         if(!tractor) {
