@@ -8,7 +8,7 @@ const router = express.Router();
 // Sign up router
 
 router.use(isAuthenticated);
-router.get('/', isAdmin, TractorController.getAllTractors);
+router.get('/', TractorController.getAllTractors);
 router.get('/:tractorId', isAdmin, TractorController.getTractor);
 router.post('/', isAdmin, TractorController.createTractor);
 router.put('/:tractorId', isAdmin, TractorController.updateTractor);
