@@ -8,6 +8,7 @@ const UserModel = require('../models/user.model');
 let ioInstance;
 
 const connectedTractors = [];
+const connectedUsers = [];
 
 function addTractor(tractorId) {
     connectedTractors.push(tractorId);
@@ -24,6 +25,21 @@ function getAllConnectedTractors() {
     return connectedTractors;
 }
 
+function addUser(userId) {
+    connectedUsers.push(userId);
+}
+
+function removeUser(userId) {
+    const indexToRemove = connectedUsers.indexOf(userId);
+    if(indexToRemove !== -1) {
+        connectedUsers.splice(indexToRemove, 1);
+    }
+}
+
+function getAllConnectedUsers() {
+    return connectedUsers;
+}
+
 function setupWebSocketServer(server) {
     ioInstance = socketIO(server, {
         cors: {
@@ -36,6 +52,7 @@ function setupWebSocketServer(server) {
         if(socket.handshake.headers.token) {
             const decoded = verifyToken(socket.handshake.headers.token, SECRET_KEY);
             socket.decoded = decoded;
+            addUser(decoded.userId);
             next();
         } else if(socket.handshake.headers.tractorid) {
             // Check if tractor id exist in database
@@ -52,7 +69,8 @@ function setupWebSocketServer(server) {
         }
     }).on('connection', (socket) => {
         console.log('Websocket connection is established.');
-
+        console.log('List of connected tractors: ', connectedTractors);
+        console.log('List of connected users: ', connectedUsers);
         socket.on('location', (locationData) => {
             console.log('Received location update: ', locationData);
         });
@@ -68,13 +86,22 @@ function setupWebSocketServer(server) {
                     ioInstance.emit(`${socket.tractorId}-${userId}`, jsonLogData);
                 })
             }
-
+            
             await LogsModel.create({
                 tractorId: socket.tractorId,
                 log: jsonLogData.logs,
                 missionId: jsonLogData.missionId,
             });
         })
+        
+        for(const userId of connectedUsers) {
+            for(const tractorId of connectedTractors) {
+                console.log('Event: ', `${userId}-${tractorId}-ack`)
+                socket.on(`${userId}-${tractorId}-ack`, (message) => {
+                    console.log('Ack message: ', message);
+                })
+            }
+        }
 
         socket.on('disconnect', () => {
             console.log('Websocket connection closed');
@@ -88,5 +115,12 @@ function getIOInstance() {
 }
 
 module.exports = {
-    setupWebSocketServer, getIOInstance, addTractor, getAllConnectedTractors, removeTractor,
+    setupWebSocketServer, 
+    getIOInstance, 
+    addTractor, 
+    getAllConnectedTractors, 
+    removeTractor, 
+    addUser, 
+    removeUser, 
+    getAllConnectedUsers,
 }

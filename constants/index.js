@@ -17,6 +17,8 @@ const HEADER = {
     AUTHORIZATION: 'authorization'
 }
 
+const ALL_TRACTOR_COMMAND = '__ALL_ONLINE__'
+
 module.exports = {
     SORT_ORDER,
     USER_ROLE,
@@ -24,4 +26,5 @@ module.exports = {
     MONGO_URI,
     MONGO_DATABASE,
     HEADER,
+    ALL_TRACTOR_COMMAND,
 }
