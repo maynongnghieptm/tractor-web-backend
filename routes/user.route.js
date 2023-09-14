@@ -16,7 +16,7 @@ router.patch('/restore/:user_id', isAdmin, UserController.restoreUser);
 router.get('/deleted/list', isAdmin, UserController.getDeletedUsers);
 router.delete('/:user_id', isAdmin, UserController.deleteUser);
 router.put('/:user_id', isAdmin, UserController.updateUser);
-router.get('/:user_id', isAdmin, UserController.getUser);
+router.get('/:user_id', UserController.getUser);
 router.get('/', isAdmin, UserController.getAllUsers);
 
 module.exports = router;

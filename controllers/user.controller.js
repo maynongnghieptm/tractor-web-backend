@@ -1,3 +1,4 @@
+const { USER_ROLE } = require("../constants");
 const UserService = require("../services/user.service");
 
 class UserController {
@@ -51,6 +52,9 @@ class UserController {
 
     static async getUser(req, res, next) {
         try {
+            if(req.user.role === USER_ROLE.USER && req.params.user_id !== req.user.userId) {
+                throw new Error('Bad request when access user information');
+            }
             const user = await UserService.getUser({
                 user_id: req.params.user_id,
             });
