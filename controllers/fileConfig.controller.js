@@ -15,10 +15,7 @@ class FileConfigController {
                 data: newFileConfig
             })
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 
@@ -31,10 +28,7 @@ class FileConfigController {
                 data: fileConfigs
             })
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 
@@ -50,10 +44,7 @@ class FileConfigController {
                 data: fileConfigs
             })
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 }

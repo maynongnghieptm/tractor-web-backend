@@ -5,6 +5,7 @@ const FileConfigModel = require("../models/fileConfig.model");
 const { getIOInstance } = require("../configs/websocket.config");
 const { getAllFileConfigs } = require("../models/repository/fileConfig.repository");
 const { SORT_ORDER } = require("../constants");
+const { BadRequestError } = require("../response/error.response");
 
 class FileConfigService {
     static async createFileConfig(payload) {
@@ -31,7 +32,7 @@ class FileConfigService {
     static async deleteFileConfig({ file_id }) {
         const fileConfig = await FileConfigModel.findOne({ _id: file_id });
         if(!fileConfig) {
-            throw new Error('Error: File Config is not exist')
+            throw new BadRequestError('Error: File Config is not exist')
         }
 
         const filename = fileConfig.fileConfig.split('/')[fileConfig.fileConfig.split('/').length - 1];
@@ -41,7 +42,7 @@ class FileConfigService {
         const filepath = path.join(__dirname, '..', 'public', 'file-config', filename);
         fs.unlink(filepath, (err) => {
             if(err) {
-                throw err;
+                throw new BadRequestError(err.message, err.status);
             }
             console.log(`File ${filepath} has been removed`);
         })

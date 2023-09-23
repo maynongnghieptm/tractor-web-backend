@@ -10,10 +10,7 @@ class TractorController {
                 data: tractors
             });
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 
@@ -28,10 +25,7 @@ class TractorController {
                 data: tractor
             });
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 
@@ -44,10 +38,7 @@ class TractorController {
                 data: newTractor
             });
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 
@@ -63,10 +54,7 @@ class TractorController {
                 data: updatedTractor
             });
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }   
 
@@ -81,10 +69,7 @@ class TractorController {
                 data: deletedTractor
             });
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 }

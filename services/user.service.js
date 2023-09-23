@@ -1,6 +1,7 @@
 const { SORT_ORDER, USER_ROLE } = require("../constants");
 const { getAllUsers, getUser } = require("../models/repository/user.repository");
 const UserModel = require("../models/user.model");
+const { BadRequestError, NotFoundError } = require("../response/error.response");
 const { getInfoData } = require("../utils");
 const TractorService = require("./tractor.service");
 
@@ -24,7 +25,7 @@ class UserService {
     static async createUser(payload) {
         const existedUser = await UserModel.findOne({ $or: [ {'username': payload.username}, {'email': payload.email} ]}).lean();
         if(existedUser) {
-            throw new Error('Error: Username or email has been already registed');
+            throw new BadRequestError('Error: Username or email has been already registed');
         }
 
         const newUser = await UserModel.create(payload);
@@ -34,7 +35,7 @@ class UserService {
     static async confirmUser({ user_id }) {
         const existedUser = await UserModel.findOne({ _id: user_id, isConfirmed: false, isDeleted: false });
         if(!existedUser) {
-            throw new Error('Error: User is not exist');
+            throw new NotFoundError('Error: User is not exist');
         }
 
         existedUser.isConfirmed = true;
@@ -45,7 +46,7 @@ class UserService {
     static async restoreUser({ user_id }) {
         const existedUser = await UserModel.findOne({ _id: user_id, isDeleted: true });
         if(!existedUser) {
-            throw new Error('Error: User is not exist');
+            throw new NotFoundError('Error: User is not exist');
         }
 
         existedUser.isDeleted = false;
@@ -56,7 +57,7 @@ class UserService {
     static async unconfirmUser({ user_id }) {
         const existedUser = await UserModel.findOne({ _id: user_id, isConfirmed: true, isDeleted: false });
         if(!existedUser) {
-            throw new Error('Error: User is not exist');
+            throw new NotFoundError('Error: User is not exist');
         }
 
         existedUser.isConfirmed = false;
@@ -67,7 +68,7 @@ class UserService {
     static async deleteUser({ user_id }) {
         const existedUser = await UserModel.findOne({ _id: user_id, isDeleted: false });
         if(!existedUser) {
-            throw new Error('Error: User is not exist');
+            throw new NotFoundError('Error: User is not exist');
         }
 
         existedUser.isDeleted = true;
@@ -78,7 +79,7 @@ class UserService {
     static async updateUser({ user_id, payload }) {
         const existedUser = await UserModel.findOne({ _id: user_id, isDeleted: false });
         if(!existedUser) {
-            throw new Error('Error: User is not exist');
+            throw new NotFoundError('Error: User is not exist');
         }
 
         Object.keys(payload).map((key) => {
@@ -92,7 +93,7 @@ class UserService {
     static async asignTractorsToUser({ userId, tractorList }) {
         const existedUser = await UserModel.findOne({ _id: userId, isDeleted: false, role: USER_ROLE.USER });
         if(!existedUser) {
-            throw new Error('Error: User is not exist');
+            throw new NotFoundError('Error: User is not exist');
         }
 
         existedUser.tractorList = tractorList;

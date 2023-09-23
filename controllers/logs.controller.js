@@ -10,10 +10,7 @@ class LogsController {
                 data: logs
             })
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 
@@ -26,10 +23,7 @@ class LogsController {
                 data: logs
             })
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 }
