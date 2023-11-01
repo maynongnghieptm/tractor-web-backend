@@ -17,7 +17,9 @@ let logCountThreshold = 10;
 const logUpdateInterval = 100; 
 
 function addTractor(tractorId) {
-    connectedTractors.push(tractorId);
+    if(!connectedTractors.includes(tractorId)) {
+        connectedTractors.push(tractorId);
+    }
 }
 
 function removeTractor(tractorId) {
@@ -33,10 +35,8 @@ function getAllConnectedTractors() {
 
 function addUser(userId) {
     if (!connectedUsers.includes(userId)) {
-        
         connectedUsers.push(userId);
     }
-  //  connectedUsers.push(userId);
 }
 
 function removeUser(userId) {
@@ -100,8 +100,16 @@ function setupWebSocketServer(server) {
            // console.log('TRACTOR: ', tractor);
             if(tractor?.userList) {
                 tractor.userList.map((userId) => {
+<<<<<<< HEAD
                 //  console.log(`${socket.tractorId}-${userId}`);
                     ioInstance.emit(`${socket.tractorId}`, jsonLogData);
+=======
+                    console.log('USER ID: ', userId.toString());
+                    if(connectedTractors.includes(userId.toString())) {
+                        console.log(`${socket.tractorId}-${userId}`);
+                        ioInstance.emit(`${socket.tractorId}-${userId}`, jsonLogData);
+                    }
+>>>>>>> b509e3a (feature: fix websocket config)
                 })
             }
             
