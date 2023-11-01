@@ -11,7 +11,9 @@ const connectedTractors = [];
 const connectedUsers = [];
 
 function addTractor(tractorId) {
-    connectedTractors.push(tractorId);
+    if(!connectedTractors.includes(tractorId)) {
+        connectedTractors.push(tractorId);
+    }
 }
 
 function removeTractor(tractorId) {
@@ -26,7 +28,9 @@ function getAllConnectedTractors() {
 }
 
 function addUser(userId) {
-    connectedUsers.push(userId);
+    if(!connectedUsers.includes(userId)) {
+        connectedUsers.push(userId);
+    }
 }
 
 function removeUser(userId) {
@@ -82,8 +86,11 @@ function setupWebSocketServer(server) {
             console.log('TRACTOR: ', tractor);
             if(tractor?.userList) {
                 tractor.userList.map((userId) => {
-                    console.log(`${socket.tractorId}-${userId}`);
-                    ioInstance.emit(`${socket.tractorId}-${userId}`, jsonLogData);
+                    console.log('USER ID: ', userId.toString());
+                    if(connectedTractors.includes(userId.toString())) {
+                        console.log(`${socket.tractorId}-${userId}`);
+                        ioInstance.emit(`${socket.tractorId}-${userId}`, jsonLogData);
+                    }
                 })
             }
             
