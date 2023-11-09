@@ -100,16 +100,13 @@ function setupWebSocketServer(server) {
            // console.log('TRACTOR: ', tractor);
             if(tractor?.userList) {
                 tractor.userList.map((userId) => {
-<<<<<<< HEAD
                 //  console.log(`${socket.tractorId}-${userId}`);
                     ioInstance.emit(`${socket.tractorId}`, jsonLogData);
-=======
                     console.log('USER ID: ', userId.toString());
                     if(connectedTractors.includes(userId.toString())) {
                         console.log(`${socket.tractorId}-${userId}`);
                         ioInstance.emit(`${socket.tractorId}-${userId}`, jsonLogData);
                     }
->>>>>>> b509e3a (feature: fix websocket config)
                 })
             }
             
