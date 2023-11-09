@@ -1,4 +1,5 @@
 const { USER_ROLE } = require("../constants");
+const { BadRequestError } = require("../response/error.response");
 const UserService = require("../services/user.service");
 
 class UserController {
@@ -11,10 +12,7 @@ class UserController {
                 data: users,
             });
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 
@@ -27,10 +25,7 @@ class UserController {
                 data: unconfirmedUsers,
             });
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 
@@ -43,17 +38,14 @@ class UserController {
                 data: deletedUsers,
             });
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 
     static async getUser(req, res, next) {
         try {
             if(req.user.role === USER_ROLE.USER && req.params.user_id !== req.user.userId) {
-                throw new Error('Bad request when access user information');
+                throw new BadRequestError('Bad request when access user information');
             }
             const user = await UserService.getUser({
                 user_id: req.params.user_id,
@@ -64,10 +56,7 @@ class UserController {
                 data: user,
             });
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 
@@ -80,10 +69,7 @@ class UserController {
                 data: newUser
             });
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 
@@ -98,10 +84,7 @@ class UserController {
                 data: confirmedUser
             });
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 
@@ -116,10 +99,7 @@ class UserController {
                 data: restoredUser
             });
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 
@@ -134,10 +114,7 @@ class UserController {
                 data: unconfirmedUser
             });
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 
@@ -150,10 +127,7 @@ class UserController {
                 data: deletedUser
             });
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 
@@ -169,10 +143,7 @@ class UserController {
                 data: updatedUser
             });
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 
@@ -188,10 +159,7 @@ class UserController {
                 data: updatedUser
             });
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
    

@@ -14,10 +14,7 @@ class FileConfigController {
                 data: command
             })
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
 }

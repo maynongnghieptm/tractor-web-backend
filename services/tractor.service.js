@@ -1,5 +1,6 @@
 const { USER_ROLE } = require("../constants");
 const TractorModel = require("../models/tractor.model");
+const { BadRequestError, NotFoundError } = require("../response/error.response");
 
 class TractorService {
     static async getAllTractors() {
@@ -16,7 +17,7 @@ class TractorService {
     static async updateTractor({ tractorId, payload }) {
         const existedTractor = await TractorModel.findOne({ _id: tractorId });
         if(!existedTractor) {
-            throw new Error('Error: Tractor is not exist')
+            throw new BadRequestError('Error: Tractor is not exist')
         }
 
         Object.keys(payload).map((key) => {
@@ -35,7 +36,7 @@ class TractorService {
     static async assignUserToTractor({ userId, tractorId }) {
         const tractor = await TractorModel.findById(tractorId);
         if(!tractor) {
-            throw new Error('Tractor not found');
+            throw new NotFoundError('Tractor not found');
         }
 
         if(!tractor.userList || tractor.userList === null || tractor.userList === undefined) {
@@ -55,12 +56,12 @@ class TractorService {
     static async removeUserFromTractor({ userId, tractorId }) {
         const tractor = await TractorModel.findById(tractorId);
         if(!tractor) {
-            throw new Error('Tractor not found');
+            throw new NotFoundError('Tractor not found');
         }
         
         const splicedIndex = tractor.userList.indexOf(userId);
         if(splicedIndex === -1) {
-            throw new Error('User not found');
+            throw new NotFoundError('User not found');
         }
 
         tractor.userList.splice(splicedIndex, 1);

@@ -15,10 +15,7 @@ class AuthController {
                 data: authUser,
             });
         } catch (err) {
-            return res.json({
-                code: err.statusCode || 500,
-                message: err.message || 'Internal Server Error',
-            });
+            next(err);
         }
     }
     static async findUser(req, res, next) {
