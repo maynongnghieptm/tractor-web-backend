@@ -41,8 +41,8 @@ app.use((error, req, res, next) => {
 
 setupWebSocketServer(server);
 
-mongoose.set('debug', true);
-mongoose.set('debug', { color: true });
+//mongoose.set('debug', true);
+//mongoose.set('debug', { color: true });
 mongoose.connect(`${MONGO_URI}/${MONGO_DATABASE}`, { 
     maxPoolSize: 50 
 })

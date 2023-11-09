@@ -4,11 +4,17 @@ const { SECRET_KEY } = require('../constants');
 const TractorModel = require('../models/tractor.model');
 const LogsModel = require('../models/logs.model');
 const UserModel = require('../models/user.model');
+const { KeyObject } = require('crypto');
 
 let ioInstance;
 
 const connectedTractors = [];
 const connectedUsers = [];
+let mergedLogs = []
+const selectedTractor = []
+let logUpdateTimer; 
+let logCountThreshold = 10;
+const logUpdateInterval = 100; 
 
 function addTractor(tractorId) {
     connectedTractors.push(tractorId);
@@ -16,7 +22,7 @@ function addTractor(tractorId) {
 
 function removeTractor(tractorId) {
     const indexToRemove = connectedTractors.indexOf(tractorId);
-    if(indexToRemove !== -1) {
+    if (indexToRemove !== -1) {
         connectedTractors.splice(indexToRemove, 1);
     }
 }
@@ -26,12 +32,16 @@ function getAllConnectedTractors() {
 }
 
 function addUser(userId) {
-    connectedUsers.push(userId);
+    if (!connectedUsers.includes(userId)) {
+        
+        connectedUsers.push(userId);
+    }
+  //  connectedUsers.push(userId);
 }
 
 function removeUser(userId) {
     const indexToRemove = connectedUsers.indexOf(userId);
-    if(indexToRemove !== -1) {
+    if (indexToRemove !== -1) {
         connectedUsers.splice(indexToRemove, 1);
     }
 }
@@ -49,41 +59,49 @@ function setupWebSocketServer(server) {
     });
 
     ioInstance.use(async function (socket, next) {
-        if(socket.handshake.headers.token) {
+        if (socket.handshake.headers.token) {
+           
             const decoded = verifyToken(socket.handshake.headers.token, SECRET_KEY);
             socket.decoded = decoded;
+            socket.userId = decoded.userId
+            console.log( socket.userId)
             addUser(decoded.userId);
+            //console.log(connectedUsers)
             next();
-        } else if(socket.handshake.headers.tractorid) {
-            // Check if tractor id exist in database
+        } else if (socket.handshake.headers.tractorid) {
             const isTractorExisted = await TractorModel.findById(socket.handshake.headers.tractorid);
-            console.log(isTractorExisted);
-            if(!isTractorExisted) {
+            console.log(isTractorExisted.tractorId)
+            if (!isTractorExisted) {
                 next(new Error('Authentication for tractor error'));
             }
             socket.tractorId = socket.handshake.headers.tractorid;
+            socket.tractorName = isTractorExisted.tractorId
             addTractor(socket.tractorId);
             next();
         } else {
             next(new Error('Authentication Error'))
         }
     }).on('connection', (socket) => {
-        console.log('Websocket connection is established.');
-        console.log('List of connected tractors: ', connectedTractors);
-        console.log('List of connected users: ', connectedUsers);
+       // logDataCount++;
+
         socket.on('location', (locationData) => {
-            console.log('Received location update: ', locationData);
+            // Do something with location data
         });
-        console.log(`${socket.tractorId}-logs`)
-        socket.on(`${socket.tractorId}-logs`, async (logData) => {
+
+        socket.on(`${socket.tractorId}-logs`, async  (logData) => {
             const jsonLogData = JSON.parse(logData);
-            console.log(jsonLogData);
+          //  console.log(jsonLogData.tractorId)
+            const logs = JSON.parse(jsonLogData.logs);
+            mergedLogs.push({"tractorId": jsonLogData.tractorId,
+                "tractorName":  socket.tractorName,
+                "data" : logs});
+            
             const tractor = await TractorModel.findOne({ _id: socket.tractorId });
-            console.log('TRACTOR: ', tractor);
+           // console.log('TRACTOR: ', tractor);
             if(tractor?.userList) {
                 tractor.userList.map((userId) => {
-                    console.log(`${socket.tractorId}-${userId}`);
-                    ioInstance.emit(`${socket.tractorId}-${userId}`, jsonLogData);
+                //  console.log(`${socket.tractorId}-${userId}`);
+                    ioInstance.emit(`${socket.tractorId}`, jsonLogData);
                 })
             }
             
@@ -92,22 +110,56 @@ function setupWebSocketServer(server) {
                 log: jsonLogData.logs,
                 missionId: jsonLogData.missionId,
             });
-        })
-        
-        for(const userId of connectedUsers) {
-            for(const tractorId of connectedTractors) {
-                console.log('Event: ', `${userId}-${tractorId}-ack`)
-                socket.on(`${userId}-${tractorId}-ack`, (message) => {
-                    console.log('Ack message: ', message);
-                })
-            }
-        }
+            
+        });
 
+        for (const userId of connectedUsers) {
+            for (const tractorId of connectedTractors) {
+                socket.on(`${userId}-${tractorId}-ack`, (message) => {
+                 //   console.log('Ack message: ', message);
+                }
+     ) }
+        }
+        socket.on(`${socket.userId}-get-logs`,  (requestedTractorIds) => {
+            const data = {"userId":socket.userId ,
+            "tractor" : requestedTractorIds}
+            if (!selectedTractor.some(item => item.tractorId === data.userId)) {
+                selectedTractor.push(data);
+            }
+        
+       
+         //   console.log(requestedTractorIds);
+               
+        });
+        
         socket.on('disconnect', () => {
-            console.log('Websocket connection closed');
             removeTractor(socket.tractorId);
         });
-    })
+    });
+    
+
+    //
+    logUpdateTimer = setInterval(() => {
+        
+        if (mergedLogs.length > connectedTractors.length - 1) {
+            
+            selectedTractor.forEach(userTractor => {
+                const userId = userTractor.userId;
+                const tractorIds = userTractor.tractor;
+                //console.log(userId)
+                //console.log(tractorIds)
+                const userLogs = mergedLogs.filter(log => tractorIds.includes(log.tractorId));
+                if (userLogs.length > 0) { 
+                    console.log(userLogs)
+                    ioInstance.emit(`${userId}-logs`, userLogs);
+
+                    mergedLogs = mergedLogs.filter(log => !tractorIds.includes(log.tractorid));
+                }
+            });
+            ioInstance.emit('logs', mergedLogs);
+            mergedLogs.length = 0; 
+        }
+    }, logUpdateInterval);
 }
 
 function getIOInstance() {
@@ -115,12 +167,12 @@ function getIOInstance() {
 }
 
 module.exports = {
-    setupWebSocketServer, 
-    getIOInstance, 
-    addTractor, 
-    getAllConnectedTractors, 
-    removeTractor, 
-    addUser, 
-    removeUser, 
+    setupWebSocketServer,
+    getIOInstance,
+    addTractor,
+    getAllConnectedTractors,
+    removeTractor,
+    addUser,
+    removeUser,
     getAllConnectedUsers,
-}
+};

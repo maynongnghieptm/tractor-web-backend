@@ -89,6 +89,11 @@ class UserService {
         return existedUser;
     }
 
+    static async findUserByUsername(username) {
+        const user = await UserModel.findOne({ username: username, isConfirmed: true   });
+        return user;
+    }
+
     static async asignTractorsToUser({ userId, tractorList }) {
         const existedUser = await UserModel.findOne({ _id: userId, isDeleted: false, role: USER_ROLE.USER });
         if(!existedUser) {

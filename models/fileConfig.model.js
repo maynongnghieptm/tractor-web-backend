@@ -1,9 +1,8 @@
 'use strict';
-// Luu secretKey dung de sign jwt cho 1 user
+
 
 const { Schema, model } = require('mongoose'); // Erase if already required
 
-// Declare the Schema of the Mongo model
 var FileConfigSchema = new Schema(
     {
         tractorIds: [{
@@ -21,5 +20,4 @@ var FileConfigSchema = new Schema(
     },
 );
 
-//Export the model
 module.exports = model('FileConfig', FileConfigSchema);
