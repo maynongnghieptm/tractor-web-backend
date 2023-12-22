@@ -7,7 +7,7 @@ const UserModel = require('../models/user.model');
 const { KeyObject } = require('crypto');
 
 let ioInstance;
-
+let count = 0
 const connectedTractors = [];
 const connectedUsers = [];
 let mergedLogs = []
@@ -64,13 +64,13 @@ function setupWebSocketServer(server) {
             const decoded = verifyToken(socket.handshake.headers.token, SECRET_KEY);
             socket.decoded = decoded;
             socket.userId = decoded.userId
-            console.log( socket.userId)
+          //  console.log( socket.userId)
             addUser(decoded.userId);
             //console.log(connectedUsers)
             next();
         } else if (socket.handshake.headers.tractorid) {
             const isTractorExisted = await TractorModel.findById(socket.handshake.headers.tractorid);
-            console.log(isTractorExisted.tractorId)
+           // console.log(isTractorExisted.tractorId)
             if (!isTractorExisted) {
                 next(new Error('Authentication for tractor error'));
             }
@@ -98,10 +98,16 @@ function setupWebSocketServer(server) {
             
             const tractor = await TractorModel.findOne({ _id: socket.tractorId });
            // console.log('TRACTOR: ', tractor);
+           console.log(socket.tractorId)
+           count++
+           console.log( "," + count );
             if(tractor?.userList) {
                 tractor.userList.map((userId) => {
                 //  console.log(`${socket.tractorId}-${userId}`);
-                    ioInstance.emit(`${socket.tractorId}`, jsonLogData);
+              
+              //  console.log(`${socket.tractorId}-${userId}`+ "," + count );
+              console.log(`${socket.tractorId}-${userId}`)
+                    ioInstance.emit(`${socket.tractorId}-${userId}`, jsonLogData);
                 })
             }
             
@@ -142,7 +148,7 @@ function setupWebSocketServer(server) {
     logUpdateTimer = setInterval(() => {
         
         if (mergedLogs.length > connectedTractors.length - 1) {
-            
+           // console.log(selectedTractor.length)
             selectedTractor.forEach(userTractor => {
                 const userId = userTractor.userId;
                 const tractorIds = userTractor.tractor;
@@ -150,7 +156,8 @@ function setupWebSocketServer(server) {
                 //console.log(tractorIds)
                 const userLogs = mergedLogs.filter(log => tractorIds.includes(log.tractorId));
                 if (userLogs.length > 0) { 
-                    console.log(userLogs)
+                  //  console.log(userLogs)
+
                     ioInstance.emit(`${userId}-logs`, userLogs);
 
                     mergedLogs = mergedLogs.filter(log => !tractorIds.includes(log.tractorid));

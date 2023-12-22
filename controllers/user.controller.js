@@ -1,7 +1,157 @@
 const { USER_ROLE } = require("../constants");
 const UserService = require("../services/user.service");
-
+const About_us = require("../models/content.model")
 class UserController {
+    static async editPage(req, res, next) {
+        try {
+            //console.log(req.body.content);
+
+            // Remove newline characters before saving to the database
+            //const cleanedContent = req.body.content.replace(/\n/g, '');
+
+            const data = new About_us({
+                url: req.body.url,
+                content: req.body.content,
+                designJSON: req.body.designJSON
+
+            });
+
+            console.log(data);
+            data.save();
+
+            return res.status(200).json({
+                code: 200,
+                message: 'Store content successfully',
+            });
+        } catch (error) {
+            // Handle the error appropriately
+            console.error(error);
+            return res.status(500).json({
+                code: 500,
+                message: 'Internal server error',
+            });
+        }
+    }
+    static async updateContent(req, res, next) {
+        try {
+            //console.log(req.body.content);
+
+            // Remove newline characters before saving to the database
+            //const cleanedContent = req.body.content.replace(/\n/g, '');
+
+
+            //console.log(req.body.designJSON)
+            const result = await UserService.updateContent(req.query.id, req.body)
+            console.log(res)
+
+            return res.status(200).json({
+                code: 200,
+                message: result,
+            })
+        } catch (error) {
+            // Handle the error appropriately
+            console.error(error);
+            return res.status(500).json({
+                code: 500,
+                message: 'Internal server error',
+            });
+        }
+    }
+    static async deleteContent(req, res, next) {
+        try {
+            console.log(req.body.id);
+
+            // Remove newline characters before saving to the database
+            //const cleanedContent = req.body.content.replace(/\n/g, '');
+
+
+            //console.log(req.body.designJSON)
+            const result = await UserService.deleteContent(req.params.id)
+
+
+            return res.status(200).json({
+                code: 200,
+                message: result,
+            })
+        } catch (error) {
+            // Handle the error appropriately
+            console.error(error);
+            return res.status(500).json({
+                code: 500,
+                message: 'Internal server error',
+            });
+        }
+    }
+    static async storeDesignJSON(req, res, next) {
+        try {
+            console.log(req.body.content);
+
+            // Remove newline characters before saving to the database
+            //const cleanedContent = req.body.content.replace(/\n/g, '');
+
+            const data = new About_us({
+                designJSON: req.body.content,
+            });
+
+            //console.log(data);
+            data.save();
+
+            return res.status(200).json({
+                code: 200,
+                message: 'Store content successfully',
+            });
+        } catch (error) {
+            // Handle the error appropriately
+            console.error(error);
+            return res.status(500).json({
+                code: 500,
+                message: 'Internal server error',
+            });
+        }
+    }
+    static async geteditPage(req, res, next) {
+        try {
+            console.log(req.query.url)
+            const data = await UserService.getEditContent(req.query.url)
+
+            console.log(data)
+            return res.status(200).json({
+                code: 200,
+                message: data,
+            });
+        } catch (error) {
+
+        }
+    }
+    static async getAdmineditPage(req, res, next) {
+        try {
+            console.log(req.query.id)
+            const data = await UserService.getAdminEditContent(req.query.id)
+
+            console.log(data)
+            return res.status(200).json({
+                code: 200,
+                message: data,
+            });
+        } catch (error) {
+
+        }
+    }
+
+    static async getAllDoc(req, res, next) {
+        try {
+            const data = await UserService.getAllDoc()
+            //console.log(111111111111111111111111111111111)
+            //console.log(data)
+            return res.status(200).json({
+                code: 200,
+                message: data,
+            });
+        } catch (error) {
+
+        }
+    }
+
     static async getAllUsers(req, res, next) {
         try {
             const users = await UserService.getAllUsers(req.query);
@@ -52,7 +202,7 @@ class UserController {
 
     static async getUser(req, res, next) {
         try {
-            if(req.user.role === USER_ROLE.USER && req.params.user_id !== req.user.userId) {
+            if (req.user.role === USER_ROLE.USER && req.params.user_id !== req.user.userId) {
                 throw new Error('Bad request when access user information');
             }
             const user = await UserService.getUser({
@@ -150,6 +300,7 @@ class UserController {
                 data: deletedUser
             });
         } catch (err) {
+            //console.log(11111111111111)
             return res.json({
                 code: err.statusCode || 500,
                 message: err.message || 'Internal Server Error',
@@ -194,7 +345,7 @@ class UserController {
             });
         }
     }
-   
+
 
 }
 

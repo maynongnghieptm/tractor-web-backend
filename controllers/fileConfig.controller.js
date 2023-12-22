@@ -15,13 +15,32 @@ class FileConfigController {
                 data: newFileConfig
             })
         } catch (err) {
+            console.log(err)
             return res.json({
+               
                 code: err.statusCode || 500,
                 message: err.message || 'Internal Server Error',
             });
         }
     }
 
+    static async createFileContent(req, res, next) {
+        try {
+            const imageUrl = `http://tractorserver.myddns.me:8000/uploads/${req.file.filename}`;
+            console.log(imageUrl)
+            return res.status(201).json({
+                code: 200,
+                message: 'Create file config successfully',
+                data: imageUrl
+            })
+        } catch (err) {
+            console.log(err)
+            return res.json({
+                code: err.statusCode || 500,
+                message: err.message || 'Internal Server Error',
+            });
+        }
+    }
     static async getAllFileConfigs(req, res, next) {
         try {
             const fileConfigs = await FileConfigService.getAllFileConfigs(req.query)

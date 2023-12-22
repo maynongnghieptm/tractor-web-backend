@@ -69,7 +69,6 @@ class AuthController {
                     html:
                     '<p>Truy cập địa chỉ bên dưới để đặt lại mật khẩu tài khoản của bạn:</p>' +
                     `http://192.168.1.21:3000/#/auth/changepassword/${username}?code=${verificationCode}`
-                      
                 };
     
                 transporter.sendMail(mailOptions, (error, info) => {
@@ -105,7 +104,7 @@ class AuthController {
             }else if(verificationCode.isActive === false){
                 return res.status(401).json({ message: 'Mã xác thực đã được sử dụng' })
             }
-            console.log(verificationCode.isActive)
+            //console.log(verificationCode.isActive)
             
             const expirationTime = moment(verificationCode.expirationTime);
             const currentTime = moment();

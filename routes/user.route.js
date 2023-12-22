@@ -18,5 +18,9 @@ router.delete('/:user_id', isAdmin, UserController.deleteUser);
 router.put('/:user_id', UserController.updateUser);
 router.get('/:user_id', UserController.getUser);
 router.get('/', isAdmin, UserController.getAllUsers);
+router.post('/edit', isAdmin, UserController.editPage);
+router.post('/update', isAdmin, UserController.updateContent);
+router.delete('/delete/:id', isAdmin, UserController.deleteContent);
+router.post('/storeJSON', isAdmin, UserController.storeDesignJSON);
 
 module.exports = router;
