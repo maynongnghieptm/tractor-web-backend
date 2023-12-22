@@ -13,7 +13,7 @@ app.use(cors());
 app.use(morgan('dev'));
 const server = require('http').createServer(app);
 
-const PORT = 8000;
+const PORT = 8001;
 
 route(app);
 
@@ -40,14 +40,13 @@ app.use((error, req, res, next) => {
 });
 
 setupWebSocketServer(server);
-
 //mongoose.set('debug', true);
 //mongoose.set('debug', { color: true });
-mongoose.connect(`${MONGO_URI}/${MONGO_DATABASE}`, { 
-    maxPoolSize: 50 
+mongoose.connect(`${MONGO_URI}/${MONGO_DATABASE}`, {
+    maxPoolSize: 50
 })
-.then(result => {
-    console.log('Connect to mongodb successfully!');
+    .then(result => {
+        console.log('Connect to mongodb successfully!');
         server.listen(PORT, () => {
             console.log(`Server is running on PORT ${PORT}`);
         });
