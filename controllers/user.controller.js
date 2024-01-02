@@ -4,27 +4,18 @@ const About_us = require("../models/content.model")
 class UserController {
     static async editPage(req, res, next) {
         try {
-            //console.log(req.body.content);
-
-            // Remove newline characters before saving to the database
-            //const cleanedContent = req.body.content.replace(/\n/g, '');
-
             const data = new About_us({
                 url: req.body.url,
                 content: req.body.content,
                 designJSON: req.body.designJSON
-
             });
-
             console.log(data);
             data.save();
-
             return res.status(200).json({
                 code: 200,
                 message: 'Store content successfully',
             });
         } catch (error) {
-            // Handle the error appropriately
             console.error(error);
             return res.status(500).json({
                 code: 500,
@@ -32,24 +23,16 @@ class UserController {
             });
         }
     }
+
     static async updateContent(req, res, next) {
         try {
-            //console.log(req.body.content);
-
-            // Remove newline characters before saving to the database
-            //const cleanedContent = req.body.content.replace(/\n/g, '');
-
-
-            //console.log(req.body.designJSON)
             const result = await UserService.updateContent(req.query.id, req.body)
             console.log(res)
-
             return res.status(200).json({
                 code: 200,
                 message: result,
             })
         } catch (error) {
-            // Handle the error appropriately
             console.error(error);
             return res.status(500).json({
                 code: 500,
@@ -57,24 +40,16 @@ class UserController {
             });
         }
     }
+
     static async deleteContent(req, res, next) {
         try {
             console.log(req.body.id);
-
-            // Remove newline characters before saving to the database
-            //const cleanedContent = req.body.content.replace(/\n/g, '');
-
-
-            //console.log(req.body.designJSON)
             const result = await UserService.deleteContent(req.params.id)
-
-
             return res.status(200).json({
                 code: 200,
                 message: result,
             })
         } catch (error) {
-            // Handle the error appropriately
             console.error(error);
             return res.status(500).json({
                 code: 500,
@@ -82,26 +57,19 @@ class UserController {
             });
         }
     }
+
     static async storeDesignJSON(req, res, next) {
         try {
             console.log(req.body.content);
-
-            // Remove newline characters before saving to the database
-            //const cleanedContent = req.body.content.replace(/\n/g, '');
-
             const data = new About_us({
                 designJSON: req.body.content,
             });
-
-            //console.log(data);
             data.save();
-
             return res.status(200).json({
                 code: 200,
                 message: 'Store content successfully',
             });
         } catch (error) {
-            // Handle the error appropriately
             console.error(error);
             return res.status(500).json({
                 code: 500,
@@ -109,40 +77,40 @@ class UserController {
             });
         }
     }
+
     static async geteditPage(req, res, next) {
         try {
-            console.log(req.query.url)
-            const data = await UserService.getEditContent(req.query.url)
-
+            console.log(req.query.url);
+            let url = req.query.url || '';
+            if (url.endsWith('/')) {
+                url = url.slice(0, -1);
+            }
+            const data = await UserService.getEditContent(url)
             console.log(data)
             return res.status(200).json({
                 code: 200,
                 message: data,
             });
         } catch (error) {
-
         }
     }
+
     static async getAdmineditPage(req, res, next) {
         try {
             console.log(req.query.id)
             const data = await UserService.getAdminEditContent(req.query.id)
-
             console.log(data)
             return res.status(200).json({
                 code: 200,
                 message: data,
             });
         } catch (error) {
-
         }
     }
 
     static async getAllDoc(req, res, next) {
         try {
             const data = await UserService.getAllDoc()
-            //console.log(111111111111111111111111111111111)
-            //console.log(data)
             return res.status(200).json({
                 code: 200,
                 message: data,
@@ -345,8 +313,6 @@ class UserController {
             });
         }
     }
-
-
 }
 
 module.exports = UserController;
