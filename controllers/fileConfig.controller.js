@@ -4,8 +4,11 @@ const path = require('path');
 const util = require('util');
 const { readdir, stat } = require('fs').promises;
 const readFile = util.promisify(fs.readFile);
-const maxSize = 20971520;
+const { exec } = require('child_process');
+const maxSize = 209715200;
 const FileImageModel = require('../models/fileImage.model')
+
+//const mime = require('mime');
 class FileConfigController {
     static async createFileConfig(req, res, next) {
         try {
@@ -28,20 +31,48 @@ class FileConfigController {
             });
         }
     }
+
     static async createFileContent(req, res, next) {
         try {
-            const pathToDriveD = 'D:/IMAGE'
+            /*
+           
+            */
+            //console.log(req.Filesize)
+            const pathToDriveD = 'D:/IMAGE';
             const uploadedFileName = req.uploadedFileName;
-            console.log(uploadedFileName)
-            const url = `http://tractorserver.myddns.me:8000/api/v1/file-config/get-image?filename=${uploadedFileName}`
-            const data = new FileImageModel({ fileImage: url });
-            await data.save();
+            console.log(uploadedFileName);
+            //const url = `http://tractorserver.myddns.me:8000/api/v1/file-config/get-image?filename=${uploadedFileName}`
+            //const data = new FileImageModel({ fileImage: url });
+            //await data.save();
             const imageUrl = path.join(pathToDriveD, uploadedFileName).replace(/\\/g, '/');
-
             return res.status(201).json({
                 code: 200,
                 message: 'Create file config successfully',
                 imageUrl: imageUrl,
+            });
+        } catch (err) {
+            console.log(err);
+            return res.json({
+                code: err.statusCode || 500,
+                message: 'Internal Server Error',
+            });
+        }
+    }
+
+    static async checkSpaceOnDisk(req, res, next) {
+        try {
+            const driveLetter = 'D:';
+            exec(`powershell -Command "(Get-WmiObject Win32_LogicalDisk | Where-Object { $_.DeviceID -eq '${driveLetter}' }).FreeSpace"`, (err, stdout, stderr) => {
+                if (err) {
+                    console.error('Error checking disk space:', err);
+                    return res.status(500).send('Internal Server Error');
+                }
+                const freeSpaceInBytes = parseInt(stdout, 10);
+                return res.status(200).json({
+                    code: 200,
+                    message: 'Get free space successfully',
+                    space: freeSpaceInBytes,
+                });
             });
         } catch (err) {
             console.log(err);
@@ -55,7 +86,7 @@ class FileConfigController {
     static async Recycle(req, res, next) {
         try {
             const imageDirectory = 'D:/Recycle';
-            const size = getDirectorySize(imageDirectory)
+            const size = getDirectorySize(imageDirectory);
             if (size > maxSize) {
                 return res.status(201).json({
                     code: 201,
@@ -87,10 +118,11 @@ class FileConfigController {
             });
         }
     }
+
     static async Restore(req, res, next) {
         try {
             const imageName = req.params.filename;
-            console.log(imageName)
+            console.log(imageName);
             const destinationPath = path.join('D:', 'IMAGE', imageName);
             const sourcePath = path.join('D:', 'Recycle', imageName);
             if (fs.existsSync(sourcePath)) {
@@ -114,10 +146,11 @@ class FileConfigController {
             });
         }
     }
+
     static async MultiRecycle(req, res, next) {
         try {
             const imageDirectory = 'D:/Recycle';
-            const size = getDirectorySize(imageDirectory)
+            const size = getDirectorySize(imageDirectory);
             if (size > maxSize) {
                 return res.status(201).json({
                     code: 201,
@@ -125,7 +158,7 @@ class FileConfigController {
                 });
             }
             const imageNames = req.body.fileNames;
-            console.log(imageNames)
+            console.log(imageNames);
             const movedImages = [];
             for (const imageName of imageNames) {
                 const sourcePath = path.join('D:', 'IMAGE', imageName);
@@ -150,10 +183,11 @@ class FileConfigController {
             });
         }
     }
+
     static async MultiRestore(req, res, next) {
         try {
             const imageNames = req.body.fileNames;
-            console.log(imageNames)
+            console.log(imageNames);
             const movedImages = [];
             for (const imageName of imageNames) {
                 const destinationPath = path.join('D:', 'IMAGE', imageName);
@@ -200,23 +234,25 @@ class FileConfigController {
             return res.status(500).send('Error reading image directory');
         }
     }
+
     static async getAllRecycleByDate(req, res, next) {
         const imageDirectory = 'D:/Recycle';
         const groupedImages = [];
-        const size = getDirectorySize(imageDirectory)
-
+        const size = getDirectorySize(imageDirectory);
         try {
-
             const files = await readdir(imageDirectory);
             await Promise.all(files.map(async (file) => {
                 const filePath = path.join(imageDirectory, file);
                 const fileStat = await stat(filePath);
                 const datePart = file.split('_')[0];
+                const realSizePart = file.split('_')[2];
+                console.log(groupedImages)
                 let group = groupedImages.find((item) => item.date === datePart);
                 if (!group) {
                     group = { date: datePart, images: [], totalSize: 0 };
                     groupedImages.push(group);
                 }
+                //if()
                 group.images.push({
                     fileName: file,
                     fileSize: fileStat.size,
@@ -228,20 +264,19 @@ class FileConfigController {
                 code: 200,
                 message: 'Get images grouped by date successfully',
                 data: groupedImages,
-                size: size
+                size: size,
             });
         } catch (err) {
             console.error(err);
             return res.status(500).send('Error reading image directory');
         }
     }
+
     static async getAllRecycleBySize(req, res, next) {
         const arr = [];
         const imageDirectory = 'D:/Recycle';
-        const size = getDirectorySize(imageDirectory)
-
+        const size = getDirectorySize(imageDirectory);
         try {
-
             const files = await readdir(imageDirectory);
             const filePromises = files.map(async (file) => {
                 const filePath = path.join(imageDirectory, file);
@@ -268,21 +303,32 @@ class FileConfigController {
     static async getImagesGroupedByDate(req, res, next) {
         const imageDirectory = 'D:/IMAGE';
         const groupedImages = [];
+        //const filteredImages=[]
         try {
             const files = await readdir(imageDirectory);
+
             await Promise.all(files.map(async (file) => {
                 const filePath = path.join(imageDirectory, file);
                 const fileStat = await stat(filePath);
+                //console.log(fileStat)
                 const datePart = file.split('_')[0];
-                let group = groupedImages.find((item) => item.date === datePart);
-                if (!group) {
-                    group = { date: datePart, images: [] };
-                    groupedImages.push(group);
+                const realSizePart = file.split('_')[1];
+                //console.log(realSizePart)
+                const expectedSize = parseInt(realSizePart);
+
+                // Check if the actual size matches the expected size
+
+                if (fileStat.size === expectedSize) {
+                    let group = groupedImages.find((item) => item.date === datePart);
+                    if (!group) {
+                        group = { date: datePart, images: [] };
+                        groupedImages.push(group);
+                    }
+                    group.images.push({
+                        fileName: file,
+                        fileSize: fileStat.size,
+                    });
                 }
-                group.images.push({
-                    fileName: file,
-                    fileSize: fileStat.size,
-                });
             }));
             groupedImages.sort((a, b) => new Date(b.date) - new Date(a.date));
             return res.status(200).json({
@@ -292,9 +338,10 @@ class FileConfigController {
             });
         } catch (err) {
             console.error(err);
-            return res.status(500).send('Error reading image directory');
+            return res.status(500).send(err);
         }
     }
+
     static async getAllImagesBySize(req, res, next) {
         const arr = [];
         const imageDirectory = 'D:/IMAGE';
@@ -303,10 +350,16 @@ class FileConfigController {
             const filePromises = files.map(async (file) => {
                 const filePath = path.join(imageDirectory, file);
                 const fileStat = await stat(filePath);
-                arr.push({
-                    fileName: file,
-                    fileSize: fileStat.size,
-                });
+                const realSizePart = file.split('_')[1];
+                //console.log(realSizePart)
+                const expectedSize = parseInt(realSizePart);
+                if (fileStat.size === expectedSize) {
+                    arr.push({
+                        fileName: file,
+                        fileSize: fileStat.size,
+                    });
+                }
+
             });
             await Promise.all(filePromises);
             arr.sort((a, b) => a.fileSize - b.fileSize);
@@ -321,19 +374,29 @@ class FileConfigController {
         }
     }
     static async getFileImage(req, res, next) {
-        const filename = req.query.filename
-        const imageDirectory = `D:/IMAGE/${filename}`;
-        fs.readFile(imageDirectory, (err, data) => {
+        const filename = req.query.filename;
+        const fileDirectory = `D:/IMAGE/${filename}`;
+        fs.readFile(fileDirectory, (err, data) => {
             if (err) {
                 console.error(err);
-                return res.status(500).send('Error reading image file');
+                return res.status(500).send('Error reading file');
             }
-            res.setHeader('Content-Type', 'image/png');
-            res.send(data);
+            const fileExtension = filename.split('.').pop().toLowerCase();
+            let contentType = '';
+            if (fileExtension === 'png' || fileExtension === 'jpeg' || fileExtension === 'jpeg' || fileExtension === 'jpg') {
+                contentType = 'image/png';
+            } else if (fileExtension === 'mp4') {
+                contentType = 'video/mp4';
+            } else {
+                contentType = 'application/octet-stream';
+            }
+            res.setHeader('Content-Type', contentType);
+            res.sendFile(fileDirectory);
         });
     }
+
     static async getFileRecycle(req, res, next) {
-        const filename = req.query.filename
+        const filename = req.query.filename;
         const imageDirectory = `D:/Recycle/${filename}`;
         fs.readFile(imageDirectory, (err, data) => {
             if (err) {
@@ -344,6 +407,7 @@ class FileConfigController {
             res.send(data);
         });
     }
+
     static async deleteImage(req, res, next) {
         try {
             const pathToDriveD = 'D:/Recycle';
@@ -372,7 +436,7 @@ class FileConfigController {
 
     static async getAllFileConfigs(req, res, next) {
         try {
-            const fileConfigs = await FileConfigService.getAllFileConfigs(req.query)
+            const fileConfigs = await FileConfigService.getAllFileConfigs(req.query);
             return res.status(201).json({
                 code: 200,
                 message: 'Create file config successfully',
@@ -403,6 +467,7 @@ class FileConfigController {
             });
         }
     }
+
     static async deleteMultiImage(req, res, next) {
         try {
             const pathToDriveD = 'D:/Recycle';
