@@ -21,7 +21,7 @@ class FileConfigController {
             return res.status(201).json({
                 code: 200,
                 message: 'Create file config successfully',
-                data: newFileConfig
+                data: newFileConfig,
             })
         } catch (err) {
             console.log(err)
@@ -35,7 +35,6 @@ class FileConfigController {
     static async createFileContent(req, res, next) {
         try {
             /*
-           
             */
             //console.log(req.Filesize)
             const pathToDriveD = 'D:/IMAGE';
@@ -49,7 +48,7 @@ class FileConfigController {
                 code: 200,
                 message: 'Create file config successfully',
                 imageUrl: imageUrl,
-            });
+            }); 
         } catch (err) {
             console.log(err);
             return res.json({
@@ -306,7 +305,6 @@ class FileConfigController {
         //const filteredImages=[]
         try {
             const files = await readdir(imageDirectory);
-
             await Promise.all(files.map(async (file) => {
                 const filePath = path.join(imageDirectory, file);
                 const fileStat = await stat(filePath);
@@ -315,9 +313,7 @@ class FileConfigController {
                 const realSizePart = file.split('_')[1];
                 //console.log(realSizePart)
                 const expectedSize = parseInt(realSizePart);
-
                 // Check if the actual size matches the expected size
-
                 if (fileStat.size === expectedSize) {
                     let group = groupedImages.find((item) => item.date === datePart);
                     if (!group) {
@@ -373,6 +369,7 @@ class FileConfigController {
             return res.status(500).send('Error reading image directory');
         }
     }
+    
     static async getFileImage(req, res, next) {
         const filename = req.query.filename;
         const fileDirectory = `D:/IMAGE/${filename}`;
@@ -501,6 +498,7 @@ class FileConfigController {
         }
     }
 }
+
 const deleteFile = (filePath) => {
     return new Promise((resolve, reject) => {
         fs.unlink(filePath, (err) => {

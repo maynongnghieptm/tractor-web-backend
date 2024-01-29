@@ -21,7 +21,6 @@ const getAllUsers = async ({ limit, sortBy, sortOrder, page, filter, select }) =
         .limit(limit)
         .select(getSelectData(select))
         .lean();
-
     return users;
 }
 

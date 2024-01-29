@@ -22,7 +22,6 @@ class AuthController {
         }
     }
     static async findUser(req, res, next) {
-
         try {
             username = req.params.user_username;
             // console.log(username)
@@ -61,7 +60,6 @@ class AuthController {
                         pass: 'xrbz oqsn kojf tyov'
                     }
                 });
-
                 const mailOptions = {
                     from: 'maynongnghieptm@gmail.com',
                     to: email,
@@ -70,11 +68,9 @@ class AuthController {
                         '<p>Truy cập địa chỉ bên dưới để đặt lại mật khẩu tài khoản của bạn:</p>' +
                         `http://tractorserver.myddns.me:3000/#/auth/changepassword/${username}?code=${verificationCode}`
                 };
-
                 transporter.sendMail(mailOptions, (error, info) => {
                     if (error) {
                         console.log(error);
-
                     } else {
                         console.log('Email sent: ' + info.response);
                         res.status(200).json({ message: 'Email sent successfully' });
@@ -97,7 +93,6 @@ class AuthController {
             const verificationCode = await VerificationCode.findOne({
                 code: code, user: username,
             })
-
             if (!verificationCode) {
                 console.log('Invalid or expired verification code');
                 return res.status(400).json({ message: 'Mã xác thực không đúng' });
@@ -105,19 +100,15 @@ class AuthController {
                 return res.status(401).json({ message: 'Mã xác thực đã được sử dụng' })
             }
             //console.log(verificationCode.isActive)
-
             const expirationTime = moment(verificationCode.expirationTime);
             const currentTime = moment();
-
             if (currentTime.isAfter(expirationTime)) {
                 console.log('Verification code has expired');
                 return res.status(402).json({ message: 'Mã xác thực đã hết hạn' });
             }
-
             await AuthService.changepassword({ username, newPassword });
-            verificationCode.isActive = false
+            verificationCode.isActive = false;
             await verificationCode.save();
-
             res.status(200).json({ message: "Cập nhật mật khẩu thành công" });
         } catch (error) {
             console.log('An error occurred:', error);

@@ -84,7 +84,6 @@ class UserService {
         Object.keys(payload).map((key) => {
             existedUser[key] = payload[key];
         })
-
         await existedUser.save();
         return existedUser;
     }
@@ -99,14 +98,11 @@ class UserService {
         if (!existedUser) {
             throw new Error('Error: User is not exist');
         }
-
         existedUser.tractorList = tractorList;
         await existedUser.save();
-
         for (const tractorId of tractorList) {
             await TractorService.assignUserToTractor({ userId, tractorId });
         }
-
         return existedUser;
     }
     static async getAdminEditContent(id) {
@@ -118,7 +114,6 @@ class UserService {
             if (!data) {
                 throw new Error('Content not found');
             }
-
             return data;
         } catch (error) {
             throw new Error(`Error fetching content: ${error.message}`);
@@ -126,7 +121,6 @@ class UserService {
     }
     static async getEditContent(url) {
         console.log(url)
-
         try {
             const data = await Contentmodel.findOne({ url: url });
             //console.log(data)
@@ -134,7 +128,6 @@ class UserService {
             if (!data) {
                 throw new Error('Content not found');
             }
-
             return data;
         } catch (error) {
             throw new Error(`Error fetching content: ${error.message}`);
@@ -143,18 +136,14 @@ class UserService {
     static async updateContent(id, newContent) {
         console.log(newContent.designJSON)
         try {
-            // Sử dụng findByIdAndUpdate để tìm và cập nhật bản ghi
             const updatedData = await Contentmodel.findByIdAndUpdate(
-                id, // ID của bản ghi cần cập nhật
+                id, 
                 { url: newContent.url, content: newContent.content, designJSON: newContent.designJSON },
-
-                { new: true, runValidators: true } // Tùy chọn để trả về bản ghi sau khi cập nhật
+                { new: true, runValidators: true } 
             ).exec();
-
             if (!updatedData) {
                 throw new Error('Content not found');
             }
-
             return updatedData;
         } catch (error) {
             throw new Error(`Error updating content: ${error.message}`);
@@ -168,10 +157,8 @@ class UserService {
             if (!deletedContent) {
                 throw new Error('Content not found');
             }
-
             console.log(`Content with ID ${id} has been deleted`);
             return deletedContent;
-
         } catch (error) {
             throw new Error(`Error updating content: ${error.message}`);
         }
@@ -181,7 +168,6 @@ class UserService {
             const data = await Contentmodel.find().exec();
             console.log(data)
             const filteredData = data.map(({ _id, url, createdAt, content }) => ({ _id, url, createdAt, content }));
-
             console.log(filteredData);
             return filteredData;
         } catch (error) {

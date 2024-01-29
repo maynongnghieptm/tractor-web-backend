@@ -22,12 +22,7 @@ class FileConfigService {
             tractorIds: tractorIds
         });
     }
-    static async createFileImage(payload) {
-
-        return await FileImageModel.create({
-            ...payload,
-        });
-    }
+   
 
     static async getAllFileConfigs({ limit = 25, sortBy = 'createdAt', sortOrder = SORT_ORDER.DESC, page = 1, filter }) {
         return await getAllFileConfigs({ limit, sortBy, sortOrder, page, filter, select: ['_id', 'tractorIds', 'fileConfig', 'createdAt'] });
