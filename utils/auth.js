@@ -8,12 +8,18 @@ const createToken = (payload, secretKey) => {
         return accessToken;
     } catch (err) {
         throw err;
+    
     }
 }
 
 const verifyToken = (token, secretKey) => {
-    const decoded = JWT.verify(token, secretKey);
-    return decoded;
+    try {
+        const decoded = JWT.verify(token, secretKey);
+        return decoded;
+    } catch (error) {
+        throw error;
+    }
+   
 }
 
 module.exports = {

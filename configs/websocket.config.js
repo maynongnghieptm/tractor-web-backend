@@ -7,14 +7,12 @@ const UserModel = require('../models/user.model');
 const { KeyObject } = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const { json } = require('express');
 let ioInstance;
-let count = 0
 const connectedTractors = [];
 const connectedUsers = [];
 let mergedLogs = []
 const selectedTractor = []
-let logUpdateTimer;
-let logCountThreshold = 10;
 const logUpdateInterval = 100;
 
 function addTractor(tractorId) {
@@ -34,7 +32,6 @@ function getAllConnectedTractors() {
 
 function addUser(userId) {
     if (!connectedUsers.includes(userId)) {
-
         connectedUsers.push(userId);
     }
     //  connectedUsers.push(userId);
@@ -61,13 +58,18 @@ function setupWebSocketServer(server) {
 
     ioInstance.use(async function (socket, next) {
         if (socket.handshake.headers.token) {
-            const decoded = verifyToken(socket.handshake.headers.token, SECRET_KEY);
-            socket.decoded = decoded;
-            socket.userId = decoded.userId
-            //  console.log( socket.userId)
-            addUser(decoded.userId);
-            //console.log(connectedUsers)
-            next();
+            try {
+                const decoded = verifyToken(socket.handshake.headers.token, SECRET_KEY);
+                socket.decoded = decoded;
+                socket.userId = decoded.userId;
+                //  console.log( socket.userId)
+                addUser(decoded.userId);
+                //console.log(connectedUsers)
+                next();
+            } catch (error) {
+                next(error)
+            }
+        
         } else if (socket.handshake.headers.tractorid) {
             const isTractorExisted = await TractorModel.findById(socket.handshake.headers.tractorid);
             // console.log(isTractorExisted.tractorId)
@@ -75,7 +77,7 @@ function setupWebSocketServer(server) {
                 next(new Error('Authentication for tractor error'));
             }
             socket.tractorId = socket.handshake.headers.tractorid;
-            socket.tractorName = isTractorExisted.tractorId
+            socket.tractorName = isTractorExisted.tractorId;
             addTractor(socket.tractorId);
             next();
         } else {
@@ -83,12 +85,32 @@ function setupWebSocketServer(server) {
         }
     }).on('connection', (socket) => {
         // logDataCount++;
-        socket.on('location', (locationData) => {
+        socket.on('sate-tractor', async (state) => {
+            try {
+              ///  const data_JSON = JSON.parse(state)
+            console.log(state)
+            const tractorId = state.tractorId
+            ioInstance.emit(`${tractorId}-state`, state.state);
+            } catch (error) {
+                
+            }
+            
         });
-
+        socket.on('sate-tractor-all', async (state) => {
+            try {
+              ///  const data_JSON = JSON.parse(state)
+            console.log(111111)
+            //const tractorId = state.tractorId
+            ioInstance.emit(`sate-tractor-all`, state);
+            } catch (error) {
+                
+            }
+            
+        });
         socket.on(`${socket.tractorId}-logs`, async (logData) => {
             const jsonLogData = JSON.parse(logData);
-            console.log(`${socket.tractorId}-logs`)
+           // console.log(jsonLogData)
+            ioInstance.emit(`${socket.tractorId}`, jsonLogData);
             const logs = JSON.parse(jsonLogData.logs);
             const JSON_log = {
                 "tractorId": jsonLogData.tractorId,
@@ -96,8 +118,9 @@ function setupWebSocketServer(server) {
                 "data": logs
             }
             mergedLogs.push(JSON_log);
+           //console.log(mergedLogs.length)
             const currentDate = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-            //  const currentTime = new Date().toISOString().slice(11, 19); // HH:mm:ss
+            //const currentTime = new Date().toISOString().slice(11, 19); // HH:mm:ss
             const fileName = `logs_${currentDate}.json`;
             const filePath = path.join('D:\\Store_logs', fileName);
             if (!fs.existsSync(filePath)) {
@@ -105,8 +128,8 @@ function setupWebSocketServer(server) {
                     if (err) throw err;
                 });
             }
-
             //  const Logs = mergedLogs.filter(log => log.tractorId.includes(socket.tractorId))
+            /*
             const jsonString = JSON.stringify(JSON_log);
             fs.readFile(filePath, 'utf8', (err, data) => {
                 if (err) {
@@ -122,18 +145,16 @@ function setupWebSocketServer(server) {
                     }
                 });
             });
+            */
             const tractor = await TractorModel.findOne({ _id: socket.tractorId });
             // console.log('TRACTOR: ', tractor);
             // console.log(socket.tractorId)
             // count++
             //console.log("," + count);
-
             //  console.log(`${socket.tractorId}-${userId}`);
             //  console.log(`${socket.tractorId}-${userId}`+ "," + count );
             //console.log(`${socket.tractorId}-${userId}`)
-            ioInstance.emit(`${socket.tractorId}`, jsonLogData);
-
-
+            
             await LogsModel.create({
                 tractorId: socket.tractorId,
                 log: jsonLogData.logs,
@@ -149,10 +170,12 @@ function setupWebSocketServer(server) {
                 )
             }
         }
+
         socket.on(`${socket.userId}-get-logs`, (requestedTractorIds) => {
             const data = {
                 "userId": socket.userId,
                 "tractor": requestedTractorIds
+
             }
             if (!selectedTractor.some(item => item.tractorId === data.userId)) {
                 selectedTractor.push(data);
@@ -180,6 +203,7 @@ function setupWebSocketServer(server) {
                     mergedLogs = mergedLogs.filter(log => !tractorIds.includes(log.tractorid));
                 }
             });
+        //    console.log(mergedLogs)
             ioInstance.emit('logs', mergedLogs);
             mergedLogs.length = 0;
         }

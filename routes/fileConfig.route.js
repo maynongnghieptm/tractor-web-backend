@@ -17,7 +17,7 @@ const checkFileSize = require('../middlewares/checkUploadComplete')
 // Sign up router
 function progress_middleware(req, res, next) {
     try {
-        //console.log()
+        console.log(req.query.filesize)
         req.Filesize = req.query.filesize
         next()
     } catch (error) {
@@ -27,15 +27,11 @@ function progress_middleware(req, res, next) {
 }
 
 
-router.post('/upload', progress_middleware, upload1, FileConfigController.createFileConfig);
+router.post('/upload', progress_middleware, upload1, FileConfigController.createFileContent);
 //router.post('/upload', progress_middleware, upLoadContent.single('image'), FileConfigController.createFileContent);
-
-
 router.post('/', upload.single('fileConfig'), FileConfigController.createFileConfig);
 router.get('/', FileConfigController.getAllFileConfigs);
 router.delete('/:file_id', FileConfigController.deleteFileConfig);
-
-
 router.get('/free_space', FileConfigController.checkSpaceOnDisk);
 router.post('/recycle/:filename', FileConfigController.Recycle);
 router.post('/recycle', FileConfigController.MultiRecycle);

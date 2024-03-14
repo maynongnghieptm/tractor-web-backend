@@ -7,13 +7,18 @@ const mongoose = require('mongoose');
 const route = require('./routes');
 const { setupWebSocketServer } = require('./configs/websocket.config');
 const { MONGO_URI, MONGO_DATABASE } = require('./constants');
+const fs = require('fs');
 app.use(express.json());
 app.use(express.static('public'))
 app.use(cors());
 app.use(morgan('dev'));
+const options = {
+    key: fs.readFileSync('server.key'),
+    cert: fs.readFileSync('server.cert')
+  };
 const server = require('http').createServer(app);
 
-const PORT = 8000;
+const PORT = 3001;
 
 route(app);
 
